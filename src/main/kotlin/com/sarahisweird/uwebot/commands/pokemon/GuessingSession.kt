@@ -9,14 +9,14 @@ import com.sarahisweird.uwebot.services.pokeapi.data.pokemon.species.PokemonSpec
 import dev.kord.rest.builder.message.EmbedBuilder
 import me.jakejmattson.discordkt.TypeContainer
 import me.jakejmattson.discordkt.arguments.AnyArg
-import me.jakejmattson.discordkt.commands.GuildCommandEvent
+import me.jakejmattson.discordkt.commands.SlashCommandEvent
 import me.jakejmattson.discordkt.conversations.conversation
 import org.jetbrains.exposed.sql.transactions.transaction
 import kotlin.math.pow
 import kotlin.random.Random
 
 class GuessingSession<T : TypeContainer>(
-    private val event: GuildCommandEvent<T>,
+    private val event: SlashCommandEvent<T>,
 ) {
     private val pokeApiService = PokeApiService.impl
 
@@ -50,8 +50,8 @@ class GuessingSession<T : TypeContainer>(
         }
     }
 
-    private suspend fun GuildCommandEvent<T>.promptGuess() {
-        createGuessingConversation().startPublicly(discord, author, channel)
+    private suspend fun SlashCommandEvent<T>.promptGuess() {
+        createGuessingConversation().startSlashResponse(discord, author, this)
     }
 
     private fun calculateDamerauLevenshteinDistances(): DamerauLevenshteinDistances {
@@ -61,13 +61,11 @@ class GuessingSession<T : TypeContainer>(
         return DamerauLevenshteinDistances(dlGerman, dlEnglish)
     }
 
-    private fun createGuessingConversation() =
+    private fun SlashCommandEvent<T>.createGuessingConversation() =
         conversation {
             guess = prompt(AnyArg) {
                 setTitleAndImage()
             }
-
-            channel.deleteMessage(previousBotMessageId)
         }
 
     private fun isResponseFullyCorrect(dlDistances: DamerauLevenshteinDistances) =
@@ -76,7 +74,7 @@ class GuessingSession<T : TypeContainer>(
     private fun responseIsPartiallyCorrect(dlDistances: DamerauLevenshteinDistances) =
         (dlDistances.german < germanName.lowercase().length) and (dlDistances.english < englishName.lowercase().length)
 
-    private suspend fun GuildCommandEvent<T>.onGuessCorrect() {
+    private suspend fun SlashCommandEvent<T>.onGuessCorrect() {
         val reward = generateRewardForCatch()
 
         respond {
@@ -87,7 +85,7 @@ class GuessingSession<T : TypeContainer>(
         }
     }
 
-    private suspend fun GuildCommandEvent<T>.onGuessPartiallyCorrect(dlDistances: DamerauLevenshteinDistances) {
+    private suspend fun SlashCommandEvent<T>.onGuessPartiallyCorrect(dlDistances: DamerauLevenshteinDistances) {
         val reward = generatePartialRewardForCatch(dlDistances)
 
         val germanPercentage = calculateGermanMatchPercentage(dlDistances.german)
@@ -113,7 +111,7 @@ class GuessingSession<T : TypeContainer>(
     private fun percentageToString(percentage: Double, decimalPlaces: Int) =
         ((percentage * 10.0.pow(decimalPlaces + 2)).toLong().toDouble() / 10.0.pow(decimalPlaces)).toString()
 
-    private suspend fun GuildCommandEvent<T>.onGuessIncorrect() {
+    private suspend fun SlashCommandEvent<T>.onGuessIncorrect() {
         respond {
             setTitleAndImage()
             setSpeciesNames()

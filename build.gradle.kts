@@ -9,6 +9,7 @@ group = "com.sarahisweird"
 version = "1.0-SNAPSHOT"
 
 repositories {
+    mavenLocal()
     mavenCentral()
     maven("https://oss.sonatype.org/content/repositories/snapshots/")
     // https://discord.com/api/oauth2/authorize?client_id=998677843275956244&permissions=8&scope=bot

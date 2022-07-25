@@ -1,7 +1,6 @@
 package com.sarahisweird.uwebot
 
 import com.sarahisweird.uwebot.database.UweDatabase
-import com.sarahisweird.uwebot.services.pokeapi.PokeApiService
 import dev.kord.common.annotation.KordPreview
 import dev.kord.gateway.Intents
 import dev.kord.gateway.PrivilegedIntent
@@ -20,7 +19,7 @@ fun main(args: Array<String>) {
 
     UweDatabase.init()
 
-    PokeApiService.impl
+//    PokeApiService.impl
 
     bot(token) {
         configure {
